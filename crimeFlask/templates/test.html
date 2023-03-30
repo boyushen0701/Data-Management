@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>an example for echarts-extension-gmap</title>
+    <link rel="stylesheet" href="../static/bootstrap/bootstrap.min.css">
+    <script src="../static/bootstrap/bootstrap.min.js"></script>
+    <!-- please replace {key} with your own API key -->
+    <script type="text/javascript"
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBdj2TdLwMFWGs2O18b_Tb1x9qXpUqK__c"></script>
+    <!-- echarts CDN -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <!-- echarts gmap extension -->
+    <!-- <script type="text/javascript" src="../dist/echarts-extension-gmap.min.js"></script> -->
+    <script type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/echarts-extension-gmap@1.4.0/dist/echarts-extension-gmap.min.js"></script>
+    <style type="text/css">
+
+        html, body, #echarts-google-map {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div style="position: relative; width: 800px; height: 500px; padding: 0px; margin: 100px; border-width: 0px; user-select: none; cursor: default; left: 0px; top: 0px;">
+        <div id="echarts-google-map"></div>
+    </div>
+</div>
+<!-- data comes from Baidu Map, just for example -->
+<script type="text/javascript">
+    var data = [
+        {name: 'la', value: 300}
+    ];
+
+    var geoCoordMap = {
+        'la': [-118.243683, 34.052235]
+    };
+
+    var convertData = function (data) {
+        var res = [];
+        for (var i = 0; i < data.length; i++) {
+            var geoCoord = geoCoordMap[data[i].name];
+            if (geoCoord) {
+                res.push({
+                    name: data[i].name,
+                    value: geoCoord.concat(data[i].value)
+                });
+            }
+        }
+        return res;
+    };
+
+    var option = {
+        // google map component
+        gmap: {
+            center: [-118.243683, 34.052235],
+            zoom: 11,
+            roam: true,
+        },
+        tooltip: {
+            trigger: 'item'
+        },
+
+        animation: true,
+        series: [
+            {
+                name: 'CRIME',
+                type: 'scatter',
+                // use `gmap` as the coordinate system
+                coordinateSystem: 'gmap',
+                // data items [[lng, lat, value], [lng, lat, value], ...]
+                data: convertData(data),
+                symbolSize: function (val) {
+                    return val[2] / 10;
+                },
+                encode: {
+                    value: 2,
+                    lng: 0,
+                    lat: 1
+                },
+                label: {
+                    formatter: '{b}',
+                    position: 'right',
+                    show: false
+                },
+                itemStyle: {
+                    color: '#00c1de'
+                },
+                emphasis: {
+                    label: {
+                        show: true
+                    }
+                }
+            },
+            {
+                name: 'TOP 5 CRIME LOCATIONS',
+                type: 'effectScatter',
+                coordinateSystem: 'gmap',
+                data: convertData(data.sort(function (a, b) {
+                    return b.value - a.value;
+                }).slice(0, 6)),
+                symbolSize: function (val) {
+                    return val[2] / 10;
+                },
+                encode: {
+                    value: 2,
+                    lng: 0,
+                    lat: 1
+                },
+                showEffectOn: 'render',
+                rippleEffect: {
+                    brushType: 'stroke'
+                },
+                label: {
+                    formatter: '{b}',
+                    position: 'right',
+                    show: true
+                },
+                itemStyle: {
+                    color: 'red',
+                    shadowBlur: 10,
+                    shadowColor: '#333'
+                },
+                zlevel: 1
+            }
+        ]
+    };
+    // initialize chart
+    var chart = echarts.init(document.getElementById("echarts-google-map"));
+    chart.setOption(option);
+</script>
+</body>
+</html>
+
+
